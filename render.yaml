@@ -2,7 +2,7 @@ services:
   - type: web
     name: story-splitter
     runtime: docker
-    plan: starter
+    plan: free
     autoDeployTrigger: commit
     healthCheckPath: /
     # This app keeps upload/split state in local disk + in-process memory.

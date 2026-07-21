@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: story-splitter
+    runtime: docker
+    plan: starter
+    autoDeployTrigger: commit
+    healthCheckPath: /
+    # This app keeps upload/split state in local disk + in-process memory.
+    # Do not scale this past 1 instance without refactoring to shared storage -
+    # requests routed to a different instance than the one that handled the
+    # upload will 404. See the NOTE above `files` in server.js.
+    numInstances: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set these two (in the Render dashboard, not here) to require a login
+      # before sharing this URL with the team. Leave unset for local-only use.
+      # - key: BASIC_AUTH_USER
+      #   value:
+      # - key: BASIC_AUTH_PASS
+      #   sync: false

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Story Splitter</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace" aria-labelledby="title">
+        <div class="topbar">
+          <div>
+            <h1 id="title">Story Splitter</h1>
+            <p>Upload one conjoined story video, verify the hard-cut markers, and export separate clips.</p>
+          </div>
+          <div class="status-pill" id="statusPill">Ready</div>
+        </div>
+
+        <form id="uploadForm" class="upload-panel">
+          <label id="dropZone" class="drop-zone" for="videoInput">
+            <input id="videoInput" name="video" type="file" accept="video/*" required>
+            <span class="drop-title">Drop video here</span>
+            <span class="drop-subtitle" id="fileName">or choose a file</span>
+          </label>
+
+          <div class="controls">
+            <div class="count-control">
+              <label for="frameCount">Frames</label>
+              <div class="count-row">
+                <button class="preset" type="button" data-count="2">2</button>
+                <button class="preset active" type="button" data-count="3">3</button>
+                <button class="preset" type="button" data-count="4">4</button>
+                <input id="frameCount" name="frameCount" type="number" min="2" max="12" value="3">
+              </div>
+            </div>
+            <button id="uploadButton" class="primary" type="submit">Detect cuts</button>
+          </div>
+        </form>
+
+        <section id="editor" class="editor" hidden>
+          <div class="section-head">
+            <div>
+              <h2>Cut markers</h2>
+              <p id="detectionSummary"></p>
+            </div>
+            <button id="splitButton" class="primary" type="button">Split</button>
+          </div>
+
+          <div class="timeline-wrap">
+            <div class="time-row">
+              <span>0:00.000</span>
+              <span id="durationLabel">0:00.000</span>
+            </div>
+            <div id="timeline" class="timeline" aria-label="Video timeline"></div>
+          </div>
+
+          <div id="markerList" class="marker-list"></div>
+        </section>
+
+        <section id="downloads" class="downloads" hidden>
+          <div class="section-head">
+            <div>
+              <h2>Downloads</h2>
+              <p>Files expire from this server after a few hours.</p>
+            </div>
+            <a id="zipLink" class="secondary" href="#">Download all (.zip)</a>
+          </div>
+          <div id="downloadList" class="download-list"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

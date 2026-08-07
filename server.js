@@ -156,29 +156,53 @@ function parseSceneCandidates(ffmpegOutput) {
   return candidates;
 }
 
+function envNumber(name, fallback) {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) ? value : fallback;
+}
+
 function chooseCuts(candidates, expectedCuts, duration) {
-  const minScore = Number(process.env.SCENE_MIN_SCORE || 0.28);
-  const minSpacing = Number(process.env.MIN_CUT_SPACING_SECONDS || 1);
-  const usable = candidates
+  const preferredMinScore = envNumber("SCENE_MIN_SCORE", 0.28);
+  const fallbackMinScore = Math.min(
+    preferredMinScore,
+    envNumber("SCENE_FALLBACK_MIN_SCORE", 0.18)
+  );
+  const minSpacing = envNumber("MIN_CUT_SPACING_SECONDS", 1);
+  const inRange = candidates
     .filter((candidate) => (
-      candidate.score >= minScore &&
       candidate.time > 0.1 &&
       candidate.time < duration - 0.1
     ))
     .sort((a, b) => b.score - a.score);
 
-  const picked = [];
-  for (const candidate of usable) {
-    const overlaps = picked.some((cut) => Math.abs(cut.time - candidate.time) < minSpacing);
-    if (!overlaps) picked.push(candidate);
-    if (picked.length === expectedCuts) break;
+  function pickAbove(minScore) {
+    const picked = [];
+    for (const candidate of inRange) {
+      if (candidate.score < minScore) continue;
+      const overlaps = picked.some((cut) => Math.abs(cut.time - candidate.time) < minSpacing);
+      if (!overlaps) picked.push(candidate);
+      if (picked.length === expectedCuts) break;
+    }
+    return picked;
+  }
+
+  let minScore = preferredMinScore;
+  let picked = pickAbove(preferredMinScore);
+  if (picked.length < expectedCuts && fallbackMinScore < preferredMinScore) {
+    const fallbackPicked = pickAbove(fallbackMinScore);
+    if (fallbackPicked.length > picked.length) {
+      minScore = fallbackMinScore;
+      picked = fallbackPicked;
+    }
   }
 
   picked.sort((a, b) => a.time - b.time);
   return {
     cuts: picked.map((cut) => Number(cut.time.toFixed(3))),
-    candidateCount: usable.length,
+    candidateCount: inRange.filter((candidate) => candidate.score >= minScore).length,
     minScore,
+    preferredMinScore,
+    fallbackMinScore,
     minSpacing
   };
 }
